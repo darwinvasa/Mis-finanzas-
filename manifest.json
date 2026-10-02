@@ -1,1 +1,10 @@
-{"name":"Mi Finanzas - Asistente Financiero","short_name":"Mi Finanzas","start_url":"./index.html","display":"standalone","background_color":"#f4f7fb","theme_color":"#17365D","description":"Asistente financiero personal"}
+{
+  "name": "Mi Finanzas V3",
+  "short_name": "Finanzas V3",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#17365D",
+  "lang": "es",
+  "icons": []
+}

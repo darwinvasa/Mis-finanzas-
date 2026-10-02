@@ -1,25 +1,288 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#17365D"><meta name="description" content="Asistente financiero personal"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"><title>Mi Finanzas</title></head><body>
-<div class="app">
-<header><div><div class="eyebrow">ASISTENTE FINANCIERO</div><h1>Mi Finanzas</h1></div><button id="resetBtn" class="iconbtn" title="Restablecer datos">↺</button></header>
-<main>
-<section id="dashboard" class="view active">
-<div class="hero"><div><span>Disponible estimado</span><strong id="available">$0</strong></div><div class="hero-badge" id="status">EN ORDEN</div></div>
-<div class="grid2">
-<div class="card"><small>Ingreso mensual</small><b id="income">$0</b></div><div class="card"><small>Gastos base</small><b id="baseExpenses">$0</b></div>
-<div class="card"><small>Deudas</small><b id="debtTotal">$0</b></div><div class="card"><small>Utilización tarjetas</small><b id="cardUse">0%</b></div>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17365D"><link rel="manifest" href="manifest.json">
+<title>Mi Finanzas V2</title>
+<style>
+:root{--navy:#17365D;--blue:#2F75B5;--bg:#f4f7fb;--card:#fff;--text:#17202a;--muted:#657383;--green:#2e7d32;--red:#c62828;--orange:#ef6c00;--line:#dce3ea}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:78px}
+header{background:linear-gradient(135deg,#17365D,#2F75B5);color:#fff;padding:22px 18px 18px;position:sticky;top:0;z-index:10}
+h1{margin:0;font-size:23px}header small{opacity:.85}.wrap{max-width:760px;margin:auto;padding:14px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:20;box-shadow:0 -3px 12px #0000000d}
+nav button{flex:1;border:0;background:none;padding:9px 3px;font-size:11px;color:#68737e}nav button.active{color:var(--blue);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 8px #17365d0a}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.metric{padding:13px;border-radius:13px;background:#f7f9fc}.metric b{display:block;font-size:19px;margin-top:4px}.muted{color:var(--muted);font-size:12px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.progress{height:9px;background:#e8edf2;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--blue);border-radius:99px}
+h2{font-size:17px;margin:5px 0 12px}h3{font-size:14px;margin:0 0 8px}
+button,.btn{border:0;border-radius:11px;padding:11px 13px;background:var(--navy);color:#fff;font-weight:650;cursor:pointer}
+button.secondary{background:#eaf1f8;color:var(--navy)}button.danger{background:#fbe9e9;color:var(--red)}
+input,select{width:100%;padding:12px;border:1px solid #cbd5df;border-radius:10px;background:#fff;font-size:15px;margin:5px 0 10px}
+label{font-size:12px;font-weight:650;color:#566370}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pill{padding:5px 9px;border-radius:99px;font-size:11px;background:#eaf1f8;color:var(--navy)}.good{color:var(--green)}.warn{color:var(--orange)}.bad{color:var(--red)}
+.list{display:flex;flex-direction:column;gap:8px}.item{padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff}
+.big{font-size:28px;font-weight:800}.center{text-align:center}.hidden{display:none}.toast{position:fixed;top:78px;left:50%;transform:translateX(-50%);background:#17365D;color:white;padding:10px 15px;border-radius:10px;z-index:30;display:none}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+canvas{width:100%;height:180px;border:1px solid var(--line);border-radius:12px;background:#fff}
+@media(max-width:420px){.grid{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.big{font-size:24px}}
+</style>
+</head>
+<body>
+<header><div class="wrap" style="padding:0"><h1>💰 Mi Finanzas</h1><small>Tu asistente financiero personal</small></div></header>
+<div id="toast" class="toast"></div>
+<main class="wrap">
+
+<section id="tab-home">
+<div class="card">
+<div class="muted">Dinero disponible estimado</div>
+<div class="big" id="cash">$0</div>
+<div class="muted" id="cashNote"></div>
 </div>
-<div class="card"><div class="row"><h2>Metas</h2><span class="muted">progreso</span></div><div id="goals"></div></div>
-<div class="card"><h2>Próximas acciones</h2><ul id="actions" class="actions"></ul></div>
+<div class="grid">
+<div class="metric"><span class="muted">Ingreso mensual</span><b id="income">$0</b></div>
+<div class="metric"><span class="muted">Gastos del mes</span><b id="monthSpend">$0</b></div>
+<div class="metric"><span class="muted">Deudas</span><b id="debt">$0</b></div>
+<div class="metric"><span class="muted">Patrimonio</span><b id="netWorth">$0</b></div>
+</div>
+<div class="card"><h2>🎯 Qué deberías hacer ahora</h2><div id="advice" class="list"></div></div>
+<div class="card"><h2>📊 Distribución mensual</h2><canvas id="budgetChart" width="700" height="250"></canvas></div>
+<div class="card"><h2>🚦 Estado financiero</h2><div id="status"></div></div><div class="card" id="spendCard">
+<h2>💸 ¿Cuánto puedo gastar?</h2>
+<div class="grid">
+<div class="metric"><span class="muted">Presupuesto variable</span><b id="vBudget">$0</b></div>
+<div class="metric"><span class="muted">Gastado</span><b id="vSpent">$0</b></div>
+<div class="metric"><span class="muted">Te queda</span><b id="vLeft">$0</b></div>
+<div class="metric"><span class="muted">Por día</span><b id="vDaily">$0</b></div>
+</div>
+<div id="spendMessage"></div>
+</div>
+<div class="card"><h2>💾 Seguridad de tus datos</h2>
+<p class="muted">Tus movimientos se guardan automáticamente en este celular. También puedes crear un respaldo y restaurarlo si cambias de dispositivo.</p>
+<button class="secondary" onclick="exportBackupV3()">Crear respaldo</button>
+<button class="secondary" onclick="document.getElementById('importV3').click()">Restaurar respaldo</button>
+<input id="importV3" type="file" accept=".json" style="display:none" onchange="importBackupV3(event)">
+</div>
 </section>
-<section id="add" class="view"><h2>Registrar movimiento</h2><form id="txForm" class="form">
-<label>Monto<input id="amount" type="number" min="0" step="100" required placeholder="35000"></label>
-<div class="grid2"><label>Tipo<select id="type"><option>Gasto</option><option>Ingreso</option><option>Pago deuda</option><option>Ahorro</option><option>Prima</option></select></label><label>Categoría<select id="category"><option>Alimentación</option><option>Transporte</option><option>Ocio</option><option>Personal</option><option>Familia</option><option>Mascota</option><option>Viajes</option><option>Deuda</option><option>Servicios</option><option>Bebé</option><option>Vivienda futura</option><option>Emergencia</option><option>Otros</option></select></label></div>
-<label>Medio<select id="method"><option>Débito</option><option>Efectivo</option><option>Bancolombia</option><option>RappiCard</option><option>Transferencia</option><option>Nómina</option><option>Otro</option></select></label>
-<label>Descripción<input id="desc" placeholder="Ej. almuerzo"></label><button class="primary" type="submit">Guardar movimiento</button></form><div id="saved" class="success hidden">Movimiento guardado ✓</div></section>
-<section id="debts" class="view"><h2>Deudas</h2><div id="debtCards"></div><div class="card"><h3>Regla de preparación hipotecaria</h3><p>No crear nueva deuda de consumo y mantener las tarjetas con saldos bajos.</p></div></section>
-<section id="goalsView" class="view"><h2>Metas</h2><div id="goalDetails"></div></section>
-<section id="history" class="view"><div class="row"><h2>Movimientos</h2><button id="clearTx" class="smallbtn">Borrar todo</button></div><div id="txList"></div></section>
-<section id="settings" class="view"><h2>Configuración</h2><p class="muted">Edita tus valores base. Los cambios se guardan en este dispositivo.</p><div id="settingsForm" class="form"></div><button id="saveSettings" class="primary">Guardar configuración</button></section>
+
+<section id="tab-add" class="hidden">
+<div class="card"><h2>➕ Registrar movimiento</h2>
+<label>Tipo</label><select id="mType"><option>Gasto</option><option>Ingreso</option><option>Pago deuda</option><option>Ahorro</option><option>Prima</option></select>
+<label>Monto</label><input id="mAmount" type="number" inputmode="decimal" placeholder="Ej. 35000">
+<div class="formgrid"><div><label>Categoría</label><select id="mCat"><option>Alimentación</option><option>Transporte</option><option>Ocio</option><option>Personal</option><option>Familia</option><option>Mascota</option><option>Viajes</option><option>Deuda</option><option>Servicios</option><option>Bebé</option><option>Vivienda futura</option><option>Emergencia</option><option>Otros</option></select></div>
+<div><label>Medio</label><select id="mMethod"><option>Débito</option><option>Efectivo</option><option>Bancolombia</option><option>RappiCard</option><option>Transferencia</option><option>Nómina</option><option>Otro</option></select></div></div>
+<label>Descripción</label><input id="mDesc" placeholder="Opcional">
+<button onclick="addMove()">Guardar movimiento</button>
+<div id="afterExpenseV3"></div>
+</div>
+<div class="card"><h2>Últimos movimientos</h2><div id="recent" class="list"></div></div>
+</section>
+
+<section id="tab-goals" class="hidden">
+<div class="card"><h2>🎯 Metas</h2><div id="goals"></div></div>
+<div class="card"><h2>🏠 Vivienda VIS</h2>
+<div class="grid"><div class="metric"><span class="muted">Precio</span><b>$160 M</b></div><div class="metric"><span class="muted">Subsidio ref.</span><b>$35,0 M</b></div></div>
+<p class="muted">Escenario de referencia: crédito 70% ($112 M) + subsidio $35,018 M → faltante aproximado $12,982 M antes de gastos de cierre.</p>
+<div id="housingCalc"></div>
+</div>
+<div class="card"><h2>👶 Fondo bebé</h2><p>Meta inicial: <b>$10.000.000</b>. Registra aquí cada aporte con categoría “Bebé”.</p><div id="baby"></div></div>
+</section>
+
+<section id="tab-debt" class="hidden">
+<div class="card"><h2>💳 Deudas</h2><div id="debts"></div></div>
+<div class="card"><h2>🚗 Aveo — decisión</h2><div id="car"></div></div>
+</section>
+
+<section id="tab-history" class="hidden">
+<div class="card"><h2>📅 Historial</h2><button class="secondary" onclick="exportData()">Exportar respaldo</button> <button class="danger" onclick="clearMoves()">Borrar movimientos</button></div>
+<div class="card"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Monto</th></tr></thead><tbody id="history"></tbody></table></div>
+</section>
+
+<section id="tab-settings" class="hidden">
+<div class="card"><h2>⚙️ Configuración</h2><p class="muted">Puedes cambiar estos valores cuando cambien tus condiciones.</p>
+<div class="formgrid">
+<div><label>Ingreso mensual</label><input id="sIncome" type="number"></div>
+<div><label>Gastos recurrentes</label><input id="sBase" type="number"></div>
+<div><label>Cuota carro</label><input id="sCarPay" type="number"></div>
+<div><label>Saldo carro</label><input id="sCarDebt" type="number"></div>
+<div><label>RappiCard</label><input id="sRappi" type="number"></div>
+<div><label>Bancolombia</label><input id="sBanc" type="number"></div>
+<div><label>Valor carro</label><input id="sCarValue" type="number"></div>
+<div><label>Meta emergencia</label><input id="sEmergency" type="number"></div>
+<div><label>Meta bebé</label><input id="sBaby" type="number"></div>
+<div><label>Meta vivienda</label><input id="sHome" type="number"></div>
+<div><label>Ahorro inicial</label><input id="sCash" type="number"></div>
+</div>
+<button onclick="saveSettings()">Guardar configuración</button>
+</div>
+<div class="card"><h2>💡 Reglas de tu plan</h2><ul><li>No financiar nuevos gastos de consumo durante la preparación hipotecaria.</li><li>Octubre: cero viajes.</li><li>Noviembre: viaje máximo $1 M.</li><li>Priorizar tarjetas antes de acelerar metas.</li><li>La prima es dinero extraordinario: usarla para acelerar objetivos.</li></ul></div>
+</section>
 </main>
-<nav><button data-view="dashboard" class="nav active">⌂<span>Inicio</span></button><button data-view="add" class="nav">＋<span>Registrar</span></button><button data-view="debts" class="nav">▣<span>Deudas</span></button><button data-view="goalsView" class="nav">◎<span>Metas</span></button><button data-view="history" class="nav">☷<span>Historial</span></button><button data-view="settings" class="nav">⚙<span>Ajustes</span></button></nav>
-</div><script src="app.js"></script></body></html>
+
+<nav>
+<button class="active" onclick="showTab('home',this)">🏠<br>Inicio</button>
+<button onclick="showTab('add',this)">➕<br>Registrar</button>
+<button onclick="showTab('goals',this)">🎯<br>Metas</button>
+<button onclick="showTab('debt',this)">💳<br>Deudas</button>
+<button onclick="showTab('history',this)">📋<br>Historial</button>
+<button onclick="showTab('settings',this)">⚙️<br>Ajustes</button>
+</nav>
+
+<script>
+const KEY="mi_finanzas_v2";
+const defaults={
+ income:4750000, base:1445000, carPay:535000, carDebt:23500000, rappi:2800000, banc:121000,
+ carValue:24000000, emergency:5000000, babyGoal:10000000, home:160000000, cash:1550000,
+ goals:{emergency:1550000,baby:0,home:0}, moves:[]
+};
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||structuredClone(defaults);
+function money(n){return new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Math.round(n||0))}
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function toast(t){let x=document.getElementById("toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",1800)}
+function showTab(name,btn){
+ document.querySelectorAll("main>section").forEach(x=>x.classList.add("hidden"));
+ document.getElementById("tab-"+name).classList.remove("hidden");
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render();
+}
+function monthMoves(){let now=new Date();return S.moves.filter(x=>{let d=new Date(x.date);return d.getMonth()==now.getMonth()&&d.getFullYear()==now.getFullYear()})}
+function categorySpent(cat){return S.moves.filter(x=>x.type=="Gasto"&&x.cat==cat).reduce((a,x)=>a+x.amount,0)}
+function totals(){
+ let expenses=S.moves.filter(x=>["Gasto","Pago deuda"].includes(x.type)).reduce((a,x)=>a+x.amount,0);
+ let incomes=S.moves.filter(x=>["Ingreso","Prima"].includes(x.type)).reduce((a,x)=>a+x.amount,0);
+ let savings=S.moves.filter(x=>x.type=="Ahorro").reduce((a,x)=>a+x.amount,0);
+ return {expenses,incomes,savings};
+}
+function render(){
+ let mm=monthMoves(), spend=mm.filter(x=>["Gasto","Pago deuda"].includes(x.type)).reduce((a,x)=>a+x.amount,0);
+ let inc=S.income+mm.filter(x=>["Ingreso","Prima"].includes(x.type)).reduce((a,x)=>a+x.amount,0);
+ let cash=S.cash+totals().incomes-totals().expenses-totals().savings;
+ document.getElementById("cash").textContent=money(cash);
+ document.getElementById("cashNote").textContent="Estimación basada en movimientos registrados";
+ document.getElementById("income").textContent=money(S.income);
+ document.getElementById("monthSpend").textContent=money(spend);
+ document.getElementById("debt").textContent=money(S.carDebt+S.rappi+S.banc);
+ document.getElementById("netWorth").textContent=money(cash+S.carValue-(S.carDebt+S.rappi+S.banc));
+ advice(); goals(); debts(); history(); settings(); drawChart();
+}
+function advice(){
+ let a=[];
+ if(S.banc>0)a.push("💳 <b>Paga Bancolombia:</b> tienes un saldo pequeño; llévalo a $0.");
+ if(S.rappi>0)a.push("💳 <b>RappiCard:</b> conserva las 2 cuotas pactadas y no agregues nuevas compras.");
+ if(S.cash<S.emergency)a.push("🛟 <b>Reserva:</b> estás por debajo de tu meta inicial de emergencia de "+money(S.emergency)+".");
+ a.push("🏠 <b>Vivienda:</b> mantén la preparación para una VIS de $160 M y busca preaprobación cuando las tarjetas estén bajas.");
+ a.push("🚗 <b>Aveo:</b> compara venderlo antes de la solicitud hipotecaria; liberar $535.000/mes puede mejorar tu flujo.");
+ document.getElementById("advice").innerHTML=a.map(x=>`<div class="item">${x}</div>`).join("");
+ let ratio=(S.base+S.carPay)/S.income;
+ document.getElementById("status").innerHTML=`
+ <div class="row"><span>Gastos + carro / ingreso</span><b class="${ratio<.5?'good':'warn'}">${(ratio*100).toFixed(1)}%</b></div>
+ <div class="progress"><div class="bar" style="width:${Math.min(ratio*100,100)}%"></div></div>
+ <p class="muted">Este indicador es presupuestal, no una aprobación bancaria.</p>`;
+}
+function goals(){
+ let baby=S.moves.filter(x=>x.cat=="Bebé"&&(x.type=="Ahorro"||x.type=="Gasto")).reduce((a,x)=>a+(x.type=="Ahorro"?x.amount:-x.amount),0);
+ let emerg=S.moves.filter(x=>x.cat=="Emergencia"&&x.type=="Ahorro").reduce((a,x)=>a+x.amount,0)+S.cash;
+ let home=S.moves.filter(x=>x.cat=="Vivienda futura"&&x.type=="Ahorro").reduce((a,x)=>a+x.amount,0);
+ const g=[["🛟 Emergencia",emerg,S.emergency],["👶 Bebé",baby,S.babyGoal],["🏠 Vivienda",home,12981900]];
+ document.getElementById("goals").innerHTML=g.map(x=>{
+  let p=Math.max(0,Math.min(100,x[1]/x[2]*100));
+  return `<div class="card"><div class="row"><b>${x[0]}</b><span>${money(x[1])} / ${money(x[2])}</span></div><div class="progress"><div class="bar" style="width:${p}%"></div></div><small>${p.toFixed(1)}%</small></div>`;
+ }).join("");
+ document.getElementById("baby").innerHTML=`<div class="progress"><div class="bar" style="width:${Math.min(100,baby/S.babyGoal*100)}%"></div></div><p>${money(baby)} de ${money(S.babyGoal)}</p>`;
+ document.getElementById("housingCalc").innerHTML=`<b>Faltante de referencia: ${money(12981900)}</b><br><small class="muted">Antes de gastos de cierre. Ajusta cuando tengas una cotización real del proyecto.</small>`;
+}
+function debts(){
+ let utilR=S.rappi/7800000, utilB=S.banc/35700000;
+ document.getElementById("debts").innerHTML=[
+  ["🚗 Crédito carro",S.carDebt,S.carPay,"19,06% E.A."],
+  ["💳 RappiCard",S.rappi,S.rappi/2,"Diferido a 2 cuotas"],
+  ["💳 Bancolombia",S.banc,S.banc,"Saldo corriente"]
+ ].map(d=>`<div class="item"><div class="row"><b>${d[0]}</b><span>${money(d[1])}</span></div><small class="muted">Pago/plan: ${money(d[2])} · ${d[3]}</small></div>`).join("");
+ let equity=S.carValue-S.carDebt;
+ document.getElementById("car").innerHTML=`<div class="grid"><div class="metric"><span class="muted">Venta estimada</span><b>${money(S.carValue)}</b></div><div class="metric"><span class="muted">Saldo deuda</span><b>${money(S.carDebt)}</b></div><div class="metric"><span class="muted">Patrimonio bruto</span><b>${money(equity)}</b></div><div class="metric"><span class="muted">Cuota liberable</span><b>${money(S.carPay)}</b></div></div><p class="muted">La decisión debe considerar cancelación de prenda, costos de venta y efecto sobre tu capacidad hipotecaria.</p>`;
+}
+function history(){
+ let arr=[...S.moves].reverse();
+ document.getElementById("recent").innerHTML=arr.slice(0,8).map(x=>`<div class="item"><div class="row"><span>${x.cat}</span><b>${money(x.amount)}</b></div><small class="muted">${x.date} · ${x.type}${x.desc?" · "+x.desc:""}</small></div>`).join("")||"<p class='muted'>Aún no tienes movimientos.</p>";
+ document.getElementById("history").innerHTML=arr.map(x=>`<tr><td>${x.date}</td><td>${x.type}</td><td>${x.cat}</td><td>${money(x.amount)}</td></tr>`).join("");
+}
+function settings(){
+ ["Income","Base","CarPay","CarDebt","Rappi","Banc","CarValue","Emergency","Baby","Home","Cash"].forEach(k=>{
+  let map={Income:"income",Base:"base",CarPay:"carPay",CarDebt:"carDebt",Rappi:"rappi",Banc:"banc",CarValue:"carValue",Emergency:"emergency",Baby:"babyGoal",Home:"home",Cash:"cash"};
+  let el=document.getElementById("s"+k); if(el) el.value=S[map[k]];
+ });
+}
+function saveSettings(){
+ let map={sIncome:"income",sBase:"base",sCarPay:"carPay",sCarDebt:"carDebt",sRappi:"rappi",sBanc:"banc",sCarValue:"carValue",sEmergency:"emergency",sBaby:"babyGoal",sHome:"home",sCash:"cash"};
+ Object.entries(map).forEach(([id,key])=>S[key]=Number(document.getElementById(id).value)||0);save();toast("Configuración guardada");render();
+}
+function addMove(){
+ let amount=Number(document.getElementById("mAmount").value);if(!amount)return toast("Ingresa un monto");
+ S.moves.push({date:new Date().toISOString().slice(0,10),type:document.getElementById("mType").value,amount,cat:document.getElementById("mCat").value,method:document.getElementById("mMethod").value,desc:document.getElementById("mDesc").value});
+ save();document.getElementById("mAmount").value="";document.getElementById("mDesc").value="";toast("Movimiento guardado");render();
+}
+function clearMoves(){if(confirm("¿Borrar todos los movimientos? Esta acción no se puede deshacer.")){S.moves=[];save();render();}}
+function exportData(){let blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="mi_finanzas_respaldo.json";a.click();URL.revokeObjectURL(a.href)}
+function drawChart(){
+ let c=document.getElementById("budgetChart"),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ let vals=[S.base,S.carPay,S.rappi/2,600000];let labs=["Base","Carro","Rappi","Viajes"];let max=Math.max(...vals)*1.15;
+ ctx.font="14px system-ui";vals.forEach((v,i)=>{let x=45+i*165,bh=(v/max)*145;ctx.fillStyle="#2F75B5";ctx.fillRect(x,h-45-bh,90,bh);ctx.fillStyle="#17202a";ctx.fillText(labs[i],x,h-22);ctx.fillText(money(v).replace(" "," "),x,h-52-bh)});
+}
+render();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
+<script>
+/* Mi Finanzas V3: presupuesto variable + respaldo/restauración */
+function calcV3(){
+  const now=new Date();
+  const mm=(S.moves||[]).filter(x=>{const d=new Date(x.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const excluded=["Deuda","Servicios","Bebé","Vivienda futura","Emergencia"];
+  const spent=mm.filter(x=>x.type==="Gasto"&&!excluded.includes(x.cat)).reduce((a,x)=>a+Number(x.amount||0),0);
+  /* Presupuesto variable: salario - recurrentes - carro - 1/2 Rappi.
+     No se usa para gastos de bebé/emergencia/vivienda porque son metas separadas. */
+  const budget=Math.max(0,Number(S.income||0)-Number(S.base||0)-Number(S.carPay||0)-Number(S.rappi||0)/2);
+  const left=budget-spent;
+  const today=new Date();
+  const days=new Date(today.getFullYear(),today.getMonth()+1,0).getDate()-today.getDate()+1;
+  const daily=Math.max(0,left/days);
+  const b=document.getElementById("vBudget"),sp=document.getElementById("vSpent"),l=document.getElementById("vLeft"),d=document.getElementById("vDaily"),msg=document.getElementById("spendMessage");
+  if(b){b.textContent=money(budget);sp.textContent=money(spent);l.textContent=money(left);d.textContent=money(daily);}
+  if(msg){
+    if(left<0) msg.innerHTML='<div class="alert bad"><b>🔴 No conviene gastar más.</b><br>Ya superaste tu presupuesto variable mensual por <b>'+money(Math.abs(left))+'</b>.</div>';
+    else if(daily<30000) msg.innerHTML='<div class="alert warn"><b>🟡 Ve con cuidado.</b><br>Tu límite prudente para hoy es <b>'+money(daily)+'</b>.</div>';
+    else msg.innerHTML='<div class="alert good"><b>🟢 Puedes gastar.</b><br>Tu límite prudente para hoy es <b>'+money(daily)+'</b> y te quedan <b>'+money(left)+'</b> para variables este mes.</div>';
+  }
+}
+function exportBackupV3(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="mi_finanzas_respaldo_"+new Date().toISOString().slice(0,10)+".json"; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function importBackupV3(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const x=JSON.parse(r.result);
+      if(!x.moves || typeof x.income!=="number") throw new Error();
+      S=x; localStorage.setItem(KEY,JSON.stringify(S)); render(); calcV3();
+      alert("Respaldo restaurado correctamente.");
+    }catch(err){alert("El archivo no es un respaldo válido de Mi Finanzas.");}
+  };
+  r.readAsText(f);
+}
+const oldRender=render;
+render=function(){oldRender();calcV3();};
+const oldAddMove=addMove;
+addMove=function(){
+  oldAddMove();
+  calcV3();
+  const x=document.getElementById("afterExpenseV3");
+  if(x){
+    const now=new Date(), mm=S.moves.filter(z=>{const q=new Date(z.date);return q.getMonth()===now.getMonth()&&q.getFullYear()===now.getFullYear()&&z.type==="Gasto"});
+    const total=mm.reduce((a,z)=>a+Number(z.amount||0),0);
+    x.innerHTML='<div class="alert good">Movimiento guardado. Revisa arriba cuánto te queda para gastos variables.</div>';
+  }
+};
+</script>
+</body></html>
