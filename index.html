@@ -1,0 +1,25 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#17365D"><meta name="description" content="Asistente financiero personal"><link rel="manifest" href="manifest.json"><link rel="stylesheet" href="styles.css"><title>Mi Finanzas</title></head><body>
+<div class="app">
+<header><div><div class="eyebrow">ASISTENTE FINANCIERO</div><h1>Mi Finanzas</h1></div><button id="resetBtn" class="iconbtn" title="Restablecer datos">↺</button></header>
+<main>
+<section id="dashboard" class="view active">
+<div class="hero"><div><span>Disponible estimado</span><strong id="available">$0</strong></div><div class="hero-badge" id="status">EN ORDEN</div></div>
+<div class="grid2">
+<div class="card"><small>Ingreso mensual</small><b id="income">$0</b></div><div class="card"><small>Gastos base</small><b id="baseExpenses">$0</b></div>
+<div class="card"><small>Deudas</small><b id="debtTotal">$0</b></div><div class="card"><small>Utilización tarjetas</small><b id="cardUse">0%</b></div>
+</div>
+<div class="card"><div class="row"><h2>Metas</h2><span class="muted">progreso</span></div><div id="goals"></div></div>
+<div class="card"><h2>Próximas acciones</h2><ul id="actions" class="actions"></ul></div>
+</section>
+<section id="add" class="view"><h2>Registrar movimiento</h2><form id="txForm" class="form">
+<label>Monto<input id="amount" type="number" min="0" step="100" required placeholder="35000"></label>
+<div class="grid2"><label>Tipo<select id="type"><option>Gasto</option><option>Ingreso</option><option>Pago deuda</option><option>Ahorro</option><option>Prima</option></select></label><label>Categoría<select id="category"><option>Alimentación</option><option>Transporte</option><option>Ocio</option><option>Personal</option><option>Familia</option><option>Mascota</option><option>Viajes</option><option>Deuda</option><option>Servicios</option><option>Bebé</option><option>Vivienda futura</option><option>Emergencia</option><option>Otros</option></select></label></div>
+<label>Medio<select id="method"><option>Débito</option><option>Efectivo</option><option>Bancolombia</option><option>RappiCard</option><option>Transferencia</option><option>Nómina</option><option>Otro</option></select></label>
+<label>Descripción<input id="desc" placeholder="Ej. almuerzo"></label><button class="primary" type="submit">Guardar movimiento</button></form><div id="saved" class="success hidden">Movimiento guardado ✓</div></section>
+<section id="debts" class="view"><h2>Deudas</h2><div id="debtCards"></div><div class="card"><h3>Regla de preparación hipotecaria</h3><p>No crear nueva deuda de consumo y mantener las tarjetas con saldos bajos.</p></div></section>
+<section id="goalsView" class="view"><h2>Metas</h2><div id="goalDetails"></div></section>
+<section id="history" class="view"><div class="row"><h2>Movimientos</h2><button id="clearTx" class="smallbtn">Borrar todo</button></div><div id="txList"></div></section>
+<section id="settings" class="view"><h2>Configuración</h2><p class="muted">Edita tus valores base. Los cambios se guardan en este dispositivo.</p><div id="settingsForm" class="form"></div><button id="saveSettings" class="primary">Guardar configuración</button></section>
+</main>
+<nav><button data-view="dashboard" class="nav active">⌂<span>Inicio</span></button><button data-view="add" class="nav">＋<span>Registrar</span></button><button data-view="debts" class="nav">▣<span>Deudas</span></button><button data-view="goalsView" class="nav">◎<span>Metas</span></button><button data-view="history" class="nav">☷<span>Historial</span></button><button data-view="settings" class="nav">⚙<span>Ajustes</span></button></nav>
+</div><script src="app.js"></script></body></html>
